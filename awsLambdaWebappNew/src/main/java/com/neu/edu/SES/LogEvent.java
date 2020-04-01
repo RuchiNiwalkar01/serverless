@@ -48,17 +48,16 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 	    from = "noreply@test." + domain;
 	    
 	    context.getLogger().log("Invocation started: " + timeStamp);
-	    long now = Calendar.getInstance().getTimeInMillis()/1000; 
-        long ttl =  30*60; // ttl set to 60 min
+        long now = Calendar.getInstance().getTimeInMillis()/1000;
+        long ttl = 30*60; // ttl set to 15 min
         long totalttl = ttl + now ;
-        
         
         
         //Mail Sending
         try {
-        	
-            JSONObject body = new JSONObject(request.getRecords().get(0).getSNS().getMessage());
-            username=    body.getString("emailAddress");
+        	 context.getLogger().log("Message rec "+request.getRecords().get(0).getSNS().getMessage());
+             JSONObject body = new JSONObject(request.getRecords().get(0).getSNS().getMessage());
+            username = body.getString("username");
         } 
         catch (JSONException e) 
         {
