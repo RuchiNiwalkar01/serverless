@@ -49,7 +49,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 	    
 	    context.getLogger().log("Invocation started: " + timeStamp);
 	    long now = Calendar.getInstance().getTimeInMillis()/1000; 
-        long ttl = 60 * 60; // ttl set to 60 min
+        long ttl =  30*60; // ttl set to 60 min
         long totalttl = ttl + now ;
         
         
