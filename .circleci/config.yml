@@ -27,7 +27,7 @@ jobs:
             mkdir -p lambda_artifact
             pwd
             ls -al
-            mv awsLambdaWebapp/target/awsLambdaWebappNew-0.0.1-SNAPSHOT.jar lambda_artifact/
+            mv awsLambdaWebappNew/target/awsLambdaWebappNew-0.0.1-SNAPSHOT.jar lambda_artifact/
             ls -al
             cd lambda_artifact
             ls -al
