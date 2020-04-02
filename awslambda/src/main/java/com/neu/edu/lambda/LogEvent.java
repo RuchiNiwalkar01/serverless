@@ -49,13 +49,13 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
         from = "no-reply@test." + DOMAIN;
 
         // ttl 
-        context.getLogger().log("Invocation started: " + timeStamp);
+        context.getLogger().log("started: " + timeStamp);
         long now = Calendar.getInstance().getTimeInMillis()/1000; 
-        long ttl = 10 * 60; // ttl set to 60 min
+        long ttl = 60 * 60; // ttl set to 60 min
         long totalttl = ttl + now ;
 
         try {
-            context.getLogger().log("Message rec "+request.getRecords().get(0).getSNS().getMessage());
+            context.getLogger().log("Messages "+request.getRecords().get(0).getSNS().getMessage());
             JSONObject body = new JSONObject(request.getRecords().get(0).getSNS().getMessage());
             username =  body.getString("uname");
             billIds = body.getJSONArray("billsDue");
