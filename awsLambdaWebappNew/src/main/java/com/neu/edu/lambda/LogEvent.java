@@ -1,4 +1,4 @@
-package com.neu.edu.SES;
+package com.neu.edu.lambda;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
