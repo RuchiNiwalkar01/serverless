@@ -15,10 +15,10 @@ jobs:
              sudo apt-get update && sudo apt-get install wget zip unzip python2.7 python-pip -y
              sudo pip install awscli --upgrade
       - run:
-          name: Changing the directory to the webapp-lambda
+          name: Changing the directory to the awslambda
           command: |
              pwd
-             cd awsLambdaWebappNew
+             cd awslambda
              sudo apt-get update
              sudo apt install maven
              mvn clean install
@@ -31,7 +31,7 @@ jobs:
             mkdir -p lambda_artifact
             pwd
             ls -al
-            mv ~/project/awsLambdaWebappNew/target/awsLambdaWebappNew-0.0.1-SNAPSHOT.jar lambda_artifact/
+            mv ~/project/awslambda/target/awslambda-0.0.1-SNAPSHOT.jar lambda_artifact/
             ls -al
             cd lambda_artifact
             ls -al
@@ -43,4 +43,4 @@ jobs:
           name: Upload Lambda Artifact to S3
           command: |
             cd lambda_artifact
-            aws s3 cp awsLambdaWebappNew-0.0.1-SNAPSHOT.jar s3://${bucketName}
+            aws s3 cp awslambda-0.0.1-SNAPSHOT.jar s3://${bucketName}
