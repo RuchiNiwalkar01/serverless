@@ -2,6 +2,7 @@ package com.neu.edu.SES;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.UUID;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -29,7 +30,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 	private String tableName = "csye6225";
 	private Regions region = Regions.US_EAST_1;
 	public String from = "";
-	static String mailSubject = "Bills Due";
+	static String mailSubject = "BillsDue";
 	static String htmlBody;
 	static String textBody;
 	static String token;
@@ -44,13 +45,14 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 		System.out.println("HELLO WORLD");
 	    String domain = System.getenv("DOMAIN_NAME");
 	    context.getLogger().log("Domain is :"+domain);
-	    from = "noreply@test." + domain;
-	    
+	    from = "no-reply@test." + domain;
+	    context.getLogger().log("FROM EMAIL is :"+from);
 	    context.getLogger().log("Invocation started: " + timeStamp);
         long now = Calendar.getInstance().getTimeInMillis()/1000;
         long ttl = 30*60; // ttl set to 15 min
         long totalttl = ttl + now ;
         
+        token = UUID.randomUUID().toString();
         
         //Mail Sending
         try {
