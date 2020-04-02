@@ -44,3 +44,10 @@ jobs:
           command: |
             cd lambda_artifact
             aws s3 cp awslambda-0.0.1-SNAPSHOT.jar s3://${bucketName}
+      - run:
+          name: AWS Lambda Update Function Code
+          command: |
+            echo "Hello AWS Lambda Update Function Code"
+            aws lambda update-function-code --function-name ${LAMBDA_FUNC} --region ${AWS_DEFAULT_REGION} \
+            --zip-file fileb://./lambda_artifact/awslambda-0.0.1-SNAPSHOT.jar
+            echo "Lambda deployment complete"
