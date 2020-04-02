@@ -3,6 +3,10 @@ package com.neu.edu.lambda;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
@@ -27,12 +31,12 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 	private final String TABLE_NAME = "csye6225";
 	private Regions REGION = Regions.US_EAST_1;
 	static final String DOMAIN = System.getenv("Domain");
-	static final String SUBJECT = "Bills Due";
-	private String textPart;
-	private String htmlPart;
+	  static final String subject = "You may View your Bills Due";
+	  static String htmlBody;
+	    private static String textBody;
 	private String from="";
 	private String username;
-	
+	 static JSONArray billIds;
 	
 	@Override
 	public Object handleRequest(SNSEvent request, Context context)
@@ -46,19 +50,22 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
         //Creating ttl
         context.getLogger().log("Invocation started: " + timeStamp);
         long now = Calendar.getInstance().getTimeInMillis()/1000; // unix time
-        long ttl = 30 * 60; // ttl set to 15 min
+        long ttl = 10 * 60; // ttl set to 15 min
         long totalttl = ttl + now ;
 
-        //Function Excecution for sending the email
-        
-//        try {
-//            JSONObject body = new JSONObject(input.getRecords().get(0).getSNS().getMessage());
-//            username=body.getString("emailAddress");
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-        username=request.getRecords().get(0).getSNS().getMessage();
-        context.getLogger().log("username: "+username);
+        try {
+            context.getLogger().log("Message rec "+request.getRecords().get(0).getSNS().getMessage());
+            JSONObject body = new JSONObject(request.getRecords().get(0).getSNS().getMessage());
+            username =  body.getString("uname");
+            billIds = body.getJSONArray("billsDue");
+            context.getLogger().log("Username is "+username);
+            context.getLogger().log("Bill Ids"+billIds);
+        } catch (JSONException e) 
+        {
+            e.printStackTrace();
+        }
+
+
         context.getLogger().log("Invocation completed: " + timeStamp);
         
         try {
@@ -79,29 +86,37 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
                                         .withString("id", username)
                                         .withLong("ttl", totalttl)));
 
-                textPart = "Test Email Body";
-                context.getLogger().log("Text " + textPart);
-                htmlPart = "<h2>Email sent from Amazon SES</h2>" + "<p>Username is :" + username + "</p>";
-                context.getLogger().log("This is HTML body: " + htmlPart);
+                //loop
+                StringBuilder BillIdsforEmail = new StringBuilder();
+                for (int i=0; i < billIds.length(); i++){
+                	BillIdsforEmail.append("https://" + DOMAIN +  "/v1/bill/"+billIds.get(i) + System.lineSeparator());
+                    
+                }
+                context.getLogger().log("Text " + BillIdsforEmail);
+                htmlBody = "<h2>Email sent from Amazon SES</h2>"
+                        + "<p>The url for your the bills created by you " +
+                        "Link: "+ BillIdsforEmail + "</p>";
+                context.getLogger().log("This is HTML body: " + htmlBody);
 
-
+                textBody="Hello "+username+ "\n You have created the following bills. The urls are as below \n Links : "+BillIdsforEmail;
                 //Sending email using Amazon SES client
                 AmazonSimpleEmailService clients = AmazonSimpleEmailServiceClientBuilder.standard()
-                        .withRegion(REGION).build();
+                        .withRegion(Regions.US_EAST_1).build();
                 SendEmailRequest emailRequest = new SendEmailRequest()
                         .withDestination(
                                 new Destination().withToAddresses(username))
                         .withMessage(new Message()
                                 .withBody(new Body()
                                         .withHtml(new Content()
-                                                .withCharset("UTF-8").withData(htmlPart))
+                                                .withCharset("UTF-8").withData(htmlBody))
                                         .withText(new Content()
-                                                .withCharset("UTF-8").withData(textPart)))
+                                                .withCharset("UTF-8").withData(textBody)))
                                 .withSubject(new Content()
-                                        .withCharset("UTF-8").withData(SUBJECT)))
+                                        .withCharset("UTF-8").withData(subject)))
                         .withSource(from);
                 clients.sendEmail(emailRequest);
                 context.getLogger().log("Email sent successfully to email id: " +username);
+
 
             } else {
                 context.getLogger().log("ttl is not expired. New request is not processed for the user: " +username);
