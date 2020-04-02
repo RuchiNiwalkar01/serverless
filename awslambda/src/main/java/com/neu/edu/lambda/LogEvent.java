@@ -2,6 +2,7 @@ package com.neu.edu.lambda;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.UUID;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,13 +32,13 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 	private final String TABLE_NAME = "csye6225";
 	private Regions REGION = Regions.US_EAST_1;
 	static final String DOMAIN = System.getenv("Domain");
-	  static final String subject = "You may View your Bills Due";
-	  static String htmlBody;
-	    private static String textBody;
+	static final String subject = "View your Bills Due";
+	static String htmlBody;
+	private static String textBody;
 	private String from="";
 	private String username;
-	 static JSONArray billIds;
-	
+	static JSONArray billIds;
+	 static String token;
 	@Override
 	public Object handleRequest(SNSEvent request, Context context)
 	{
@@ -64,7 +65,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
         {
             e.printStackTrace();
         }
-
+        token = UUID.randomUUID().toString();
 
         context.getLogger().log("Invocation completed: " + timeStamp);
         
@@ -84,6 +85,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
                         .putItem(
                                 new PutItemSpec().withItem(new Item()
                                         .withString("id", username)
+                                        .withString("token", token)
                                         .withLong("ttl", totalttl)));
 
                 //loop
@@ -118,10 +120,14 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
                 context.getLogger().log("Email sent successfully to email id: " +username);
 
 
-            } else {
+            }
+            else 
+            {
                 context.getLogger().log("ttl is not expired. New request is not processed for the user: " +username);
             }
-        } catch (Exception ex) {
+        } 
+        catch (Exception ex) 
+        {
             context.getLogger().log("Email was not sent. Error message: " + ex.getMessage());
         }
         return null;
