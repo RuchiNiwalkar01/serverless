@@ -44,8 +44,8 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 		
 		String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss").format(Calendar.getInstance().getTime());
         context.getLogger().log("domain"+DOMAIN);
-        from="niwalkar.r@husky.neu.edu";
-        //from = "noreply@test." + DOMAIN;
+       
+        from = "no-reply@test." + DOMAIN;
 
         //Creating ttl
         context.getLogger().log("Invocation started: " + timeStamp);
@@ -89,7 +89,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
                 //loop
                 StringBuilder BillIdsforEmail = new StringBuilder();
                 for (int i=0; i < billIds.length(); i++){
-                	BillIdsforEmail.append("https://" + DOMAIN +  "/v1/bill/"+billIds.get(i) + System.lineSeparator());
+                	BillIdsforEmail.append(DOMAIN +  "/v1/bill/"+billIds.get(i) + System.lineSeparator());
                     
                 }
                 context.getLogger().log("Text " + BillIdsforEmail);
@@ -98,7 +98,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
                         "Link: "+ BillIdsforEmail + "</p>";
                 context.getLogger().log("This is HTML body: " + htmlBody);
 
-                textBody="Hello "+username+ "\n You have created the following bills. The urls are as below \n Links : "+BillIdsforEmail;
+                textBody="Hello "+username+ "\n You have following bills due. The urls are as below \n Links : "+BillIdsforEmail;
                 //Sending email using Amazon SES client
                 AmazonSimpleEmailService clients = AmazonSimpleEmailServiceClientBuilder.standard()
                         .withRegion(Regions.US_EAST_1).build();
