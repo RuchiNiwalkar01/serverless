@@ -33,8 +33,8 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 	private Regions REGION = Regions.US_EAST_1;
 	static final String DOMAIN = System.getenv("Domain");
 	static final String subject = "View your Bills Due";
-	static String htmlBody;
-	private static String textBody;
+	static String htmlpart;
+	private static String textpart;
 	private String from="";
 	private String username;
 	static JSONArray billIds;
@@ -48,10 +48,10 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
        
         from = "no-reply@test." + DOMAIN;
 
-        //Creating ttl
+        // ttl 
         context.getLogger().log("Invocation started: " + timeStamp);
-        long now = Calendar.getInstance().getTimeInMillis()/1000; // unix time
-        long ttl = 10 * 60; // ttl set to 15 min
+        long now = Calendar.getInstance().getTimeInMillis()/1000; 
+        long ttl = 10 * 60; // ttl set to 60 min
         long totalttl = ttl + now ;
 
         try {
@@ -67,10 +67,10 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
         }
         token = UUID.randomUUID().toString();
 
-        context.getLogger().log("Invocation completed: " + timeStamp);
+        context.getLogger().log("completed: " + timeStamp);
         
         try {
-            initDynamoDbClient();
+            calldynamoDb();
             long ttlDbValue = 0;
             Item item = this.dynamoDB.getTable(TABLE_NAME).getItem("id", username);
             if (item != null) {
@@ -79,7 +79,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
             }
 
             if (item == null || (ttlDbValue < now && ttlDbValue != 0)) {
-                context.getLogger().log("Checking for valid ttl");
+                context.getLogger().log("Searching for valid ttl");
                 context.getLogger().log("ttl expired, creating new token and sending email");
                 this.dynamoDB.getTable(TABLE_NAME)
                         .putItem(
@@ -95,12 +95,12 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
                     
                 }
                 context.getLogger().log("Text " + BillIdsforEmail);
-                htmlBody = "<h2>Email sent from Amazon SES</h2>"
-                        + "<p>The url for your the bills created by you " +
+                htmlpart = "<h2>You may find links to your Due Bills Below</h2>"
+                        + "<p>The url for your the bills created " +
                         "Link: "+ BillIdsforEmail + "</p>";
-                context.getLogger().log("This is HTML body: " + htmlBody);
+                context.getLogger().log("This is HTML body: " + htmlpart);
 
-                textBody="Hello "+username+ "\n You have following bills due. The urls are as below \n Links : "+BillIdsforEmail;
+                textpart="Hello "+username+ "\n You have following bills due. The urls are as below \n Links to bills are : "+BillIdsforEmail;
                 //Sending email using Amazon SES client
                 AmazonSimpleEmailService clients = AmazonSimpleEmailServiceClientBuilder.standard()
                         .withRegion(Regions.US_EAST_1).build();
@@ -110,9 +110,9 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
                         .withMessage(new Message()
                                 .withBody(new Body()
                                         .withHtml(new Content()
-                                                .withCharset("UTF-8").withData(htmlBody))
+                                                .withCharset("UTF-8").withData(htmlpart))
                                         .withText(new Content()
-                                                .withCharset("UTF-8").withData(textBody)))
+                                                .withCharset("UTF-8").withData(textpart)))
                                 .withSubject(new Content()
                                         .withCharset("UTF-8").withData(subject)))
                         .withSource(from);
@@ -134,7 +134,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 		
 	}
 	
-	private void initDynamoDbClient() 
+	private void calldynamoDb() 
 	{
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withRegion(REGION)
