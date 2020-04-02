@@ -42,7 +42,6 @@ public class LogEvent implements RequestHandler<SNSEvent, Object>
 	@Override
 	public Object handleRequest(SNSEvent request, Context context)
 	{
-		
 		String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss").format(Calendar.getInstance().getTime());
         context.getLogger().log("domain"+DOMAIN);
        
